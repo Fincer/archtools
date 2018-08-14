@@ -9,6 +9,8 @@ This repository has various practical developer/sysadmin-oriented tools to Arch 
 
 ### Contents
 
+## TODO - unfinished descriptions here!
+
 - **tools/getsource.sh**
     - What: Retrieve necessary build time files, such as PKGBUILD + patches, from remote Arch/AUR package repositories
         - As you execute this script, it asks for the package name on remote repository. Be exact. Default name is the name of your current working directory.
