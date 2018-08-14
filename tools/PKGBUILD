@@ -1,0 +1,118 @@
+# Maintainer: Pekka Helenius <fincer89@hotmail.com>
+
+# Do we include server-specific files such as SSH timezone settings?
+server_environment=false
+
+if [[ $server_environment == "true" ]]; then
+    pkgname=archtools-server
+    pkgdesc="Useful scripts for Arch Linux (server)"
+    conflicts=(archtools)
+else
+    pkgname=archtools
+    pkgdesc="Useful scripts for Arch Linux"
+    conflicts=(archtools-server)
+fi
+
+pkgver=0.1
+pkgrel=1
+url="https://github.com/Fincer/archtools"
+arch=(any)
+license=(GPL)
+depends=(coreutils bash grep sed
+pacman # listpkg.sh, bininfo.sh, pkginfo.sh, buildpkg.sh, installlocal.sh, missinglibs.sh, nowner.sh, findpkg.sh, pkgdeps.sh, pkgstr.sh, risks.sh, showpkg.sh
+perl # findpkg.sh, genmac.sh
+wget # getsource.sh
+file # nowner.sh
+which iputils 9base package-query # pkgdeps.sh (9base = read command)  #mimetype TODO get rid of this dependency
+tar xz bzip2 unrar gzip unzip p7zip cabextract #extract.sh
+arch-audit bc # risks.sh
+glibc # missinglibs.sh
+util-linux # killprocess.sh (kill command)
+stderred # bash.custom
+)
+makedepends=(git)
+source=(
+tputcolors.sh
+extract.sh
+findmatch.sh
+findpkg.sh
+genmac.sh
+getsource.sh # TODO: More implementation needed. See the file for details
+nowner.sh # TODO: More implementation needed. See the file for details
+pkgdeps.sh # TODO: More implementation needed. See the file for details
+pkgstr.sh
+archrisks.sh
+showpkg.sh
+deltmpfiles.sh
+missinglibs.sh
+installlocal.sh
+buildpkg.sh
+pkginfo.sh
+bininfo.sh
+listpkg.sh
+killprocess.sh
+rmpkgfiles.sh
+specialchars.sh
+bash.custom
+https://raw.github.com/trapd00r/LS_COLORS/master/LS_COLORS)
+
+if [[ $server_environment == "true" ]]; then
+    # for ssh_timezone.sh
+    depends+=(geoip2-database mmdblookup systemd openssh bind-tools)
+    source+=(ssh_timezone.sh)
+fi
+
+sha256sums=('623b794a8a537649cc434b496dbf1f018aeea99f57f11d0719f80e495ca438b6'
+            '568dba0eb0dfe1875980484fe473bbbd4397bdc04622f6177992ee75ca1b065f'
+            'ed4e06ceb5aff36ea66ce9de74f5ff2236ab2f92a9419d79d6fefe5a1b013859'
+            'a3cf8e77af8a49935c3e9a579354f761ab7ca8c2f94760012b9e23a196307f8f'
+            '047bbe110d75a6e44f427675134c0594bc413efd57ca16836ff1acd607601c10'
+            'a56c4e7b99078da4324c425fe4da5dc7c10c55d7fac62c8d23a86cfcf4abae0e'
+            '4b1015e10c0f4e4e9e0dd64533aea1ffe914f3ce6760bf6293f056b4069a4f37'
+            '67d5627b20ec75d94cb89f9f193daa8a8018d1453d387e0306c0032f5a9b6b30'
+            '88e37be0de270d023712d4bae852c54292541ca5510d09c5a1316fa5958f117c'
+            'abc140033891cc4564d71e8487f6cd1e54add761417cc772652542daf7352f44'
+            '8b76a175d7cc767519d1e3519d1fd874cc19cc529e08a27138948f8a1907ac6a'
+            '6886176293cb3ed131dd83e2ca3aa15f70c559e265534e195fa8848f2d02f659'
+            'ef4574de79c82d52a2cfb57cbf19419362ab702471bd71620e5893f426d150e2'
+            'ac761aa82d3a369a3f5335ad8f38af6cd00181cacf24737080e6d6ed6fff1b18'
+            '63a7b50faba7963584519f2800205d853cc02d6386362c9efd9f61154e4c9ddb'
+            'aa0b96ff9f1ff51e1ea3634fa7e17cbffa565c5b2db79ed75bd6aeeb9de9a723'
+            'fc87bd14c0638cd3c803143c371946efe2c96a87d72d2c144fbaf29a815294d3'
+            '4baf8c7d1032cafb8535dc4d53c42b7e7f2da6839bde791c31104a3f67eb845b'
+            'e179f9b18d6869558a97530101502ae6b445d3ef430e2e4359d015f214292093'
+            '1aae9db8652179e18691fd51c687ab393672f380084e8777145572a5699bf5cf'
+            '594453fefd07471e4aa167c486c77fbf589c5ee838cb0f33d3b5399fabff5ee6'
+            '40fd211e7b4a21ca61be81a809ee47f58adc6cd220218a20a0c7e65e1534c6ca')
+
+package() {
+  mkdir -p "$pkgdir"/{usr/bin,etc}
+
+  #cp -R "$srcdir"/"$pkgname"/*.sh "$pkgdir"/usr/bin/
+  install -m644 "$srcdir"/LS_COLORS "$pkgdir"/etc/dircolors
+  install -m644 "$srcdir"/bash.custom "$pkgdir"/etc/bash.custom
+
+  for sh in ./*.sh; do
+    install -m755 $sh "$pkgdir"/usr/bin/
+    #chmod u=rwx,g=rx,o=rx $sh
+    mv "$pkgdir"/usr/bin/$sh $(echo "$pkgdir"/usr/bin/$sh | sed 's/\.sh//')
+  done
+
+  
+  msg2 '
+  
+  In /etc/bash.bashrc file, replace line
+  
+  PS1="[\\u@\\h \\W]\\$ "
+  
+  with
+  
+  [[ -f /etc/bash.custom ]] && . /etc/bash.custom || PS1="[\\u@\\h \\W]\\$ "
+  
+  After that, you can change bash settings globally by editing /etc/bash.custom file
+  '
+
+  #msg2 "You can change bash settings globally by editing /etc/bash.custom file"
+
+}
+

@@ -1,0 +1,840 @@
+#!/bin/bash
+
+#    Global bash customization settings
+#    Copyright (C) 2018  Pekka Helenius
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+##############################################################################
+# In order to use this file, replace the following line in /etc/bash.bashrc file:
+
+# PS1="[\\u@\\h \\W]\\$ "
+# 
+# with
+#
+# [[ -f /etc/bash.custom ]] && . /etc/bash.custom || PS1="[\\u@\\h \\W]\\$ "
+
+# Insert/Install this file into /etc folder.
+
+# After that, you can change bash settings globally by editing /etc/bash.custom file
+
+##############################################################################
+# Check https://www.cyberciti.biz/tips/howto-linux-unix-bash-shell-setup-prompt.html for more settings
+
+#######################################
+
+# Use server environment settings? Main switch.
+# Use only if you implement this solution to a server environment
+# You don't need this feature for client/local computers
+
+ENABLE_SERVER_ENV=no
+
+#######################################
+
+# APPLIES ONLY IF SERVER ENVIRONMENT ENABLED
+
+# Retrieve time zone information for every user connected with a SSH client
+# Based on a look up for local GeoIP database
+# If timezone can't be defined, use UTC time as a fallback value
+# Timezone information can be overwritten by exporting TZ variable with
+# desirable value as the user in the user-specific $HOME/.bashrc file
+#
+# This method doesn't require any environment variables delivered via SSH
+# connection by a client
+# This method doesn't require any modifications to /etc/ssh/sshd_config file.
+#
+ENABLE_SSH_TIMEZONE=yes
+
+#######################################
+
+# APPLIES ONLY IF SERVER ENVIRONMENT ENABLED
+
+# If server environment is enabled
+if [[ $ENABLE_SERVER_ENV == "yes" ]]; then
+
+    if [[ $ENABLE_SSH_TIMEZONE == "yes" ]]; then
+
+        if [[ $(export -p | grep SSH_TTY) ]]; then
+            . $(which ssh_timezone)
+        fi
+    fi
+fi
+
+##############################################################################
+# Hook to bash's STDERR output so that it will be printed as red for all users
+export LD_PRELOAD="/usr/\$LIB/libstderred.so${LD_PRELOAD:+:$LD_PRELOAD}"
+
+##############################################################################
+# COLOR TABLE
+# These are available colors
+# Expand if you wish
+
+# Full color table available by executing 'tputcolors' command
+
+# To get equal color values here, use command 'tput setaf <colorcode> | hexdump -c'
+
+# By default, blank TTY sessions have TERM=linux, which has limitation of 8 possible colors when
+# tput is used. On many graphical environments, TERM=xterm-256color is used instead, expanding
+# all possible colors to 256.
+# Because colors defined in this bash file rely on 256 color support, we must
+# export TERM=xterm-256color in all opened shell sessions, including blank TTYs.
+#
+# Setting raw color values, which are disabled below, does not work well with 
+# slash \$ escaped 'bash_foldercolor' function (defined below)
+#
+# You get count of supported colors with 'tput colors' command
+#
+export TERM=xterm-256color
+
+bash_red=$(tput setaf 196)
+bash_pink=$(tput setaf 211)
+bash_green=$(tput setaf 46)
+bash_yellow=$(tput setaf 226)
+bash_light_yellow=$(tput setaf 229)
+bash_gold=$(tput setaf 184)
+bash_orange=$(tput setaf 172)
+bash_blue=$(tput setaf 27)
+bash_light_blue=$(tput setaf 33)
+bash_magenta=$(tput setaf 201)
+bash_cyan=$(tput setaf 51)
+bash_turquoise=$(tput setaf 86)
+bash_grey=$(tput setaf 250)
+bash_white=$(tput setaf 255)
+
+bash_color_default=$(tput sgr0)
+
+#bash_red="\033[38;5;196m"
+#bash_pink="\033[38;5;211"
+#bash_green="\033[38;5;46m"
+#bash_yellow="\033[38;5;226m"
+#bash_light_yellow="\033[38;5;229m"
+#bash_gold="\033[38;5;184m"
+#bash_orange="\033[38;5;172m"
+#bash_blue="\033[38;5;27m"
+#bash_light_blue="\033[38;5;33m"
+#bash_magenta="\033[38;5;201m"
+#bash_cyan="\033[38;5;51m"
+#bash_turquoise="\033[38;5;86m"
+#bash_grey="\033[38;5;250m"
+#bash_white="\033[38;5;255m"
+
+#bash_color_default="\033[0m"
+
+##############################################################################
+# COLOR TABLE CHECK FUNCTION
+
+bash_colorstring() {
+
+    case $1 in
+        red)
+            printf "\x01%s\x02" "${bash_red}"
+            ;;
+        pink)
+            printf "\x01%s\x02" "${bash_pink}"
+            ;;
+        green)
+            printf "\x01%s\x02" "${bash_green}"
+            ;;
+        yellow)
+            printf "\x01%s\x02" "${bash_yellow}"
+            ;;
+        light_yellow)
+            printf "\x01%s\x02" "${bash_light_yellow}"
+            ;;
+        gold)
+            printf "\x01%s\x02" "${bash_gold}"
+            ;;
+        orange)
+            printf "\x01%s\x02" "${bash_orange}"
+            ;;
+        blue)
+            printf "\x01%s\x02" "${bash_blue}"
+            ;;
+        light_blue)
+            printf "\x01%s\x02" "${bash_light_blue}"
+            ;;
+        magenta|purple)
+            printf "\x01%s\x02" "${bash_magenta}"
+            ;;
+        cyan)
+            printf "\x01%s\x02" "${bash_cyan}"
+            ;;
+        turquoise)
+            printf "\x01%s\x02" "${bash_turquoise}"
+            ;;
+        grey)
+            printf "\x01%s\x02" "${bash_grey}"
+            ;;
+        white)
+            printf "\x01%s\x02" "${bash_white}"
+            ;;
+        default|*)
+            printf "\x01%s\x02" "${bash_color_default}"
+    esac
+}
+
+##############################################################################
+
+# Original PS1 variable value
+#PS1='[\u@\h \W]\$ '
+
+#######################################
+
+# APPLIES ONLY IF SERVER ENVIRONMENT ENABLED
+
+# Different command prompt for local (server) logins?
+# Distinguish from SSH logins
+# This string does not have any colors for now
+# Applies only to tty sessions (sessions without X desktop)
+
+BASH_PS1_DIFFERENT_LOCAL=yes
+BASH_PS1_LOCAL='[\u: \W ]\$ '
+
+#######################################
+# This is an override switch for all color settings
+BASH_PS1_SHOW_COLORS=yes
+
+#######################################
+# Start and ending symbols for command prompt
+
+BASH_PS1_START="["
+BASH_PS1_START_COLORS=no
+BASH_PS1_START_COLOR=$(bash_colorstring default)
+
+BASH_PS1_END=" ]"
+BASH_PS1_END_COLORS=no
+BASH_PS1_END_COLOR=$(bash_colorstring default)
+
+#######################################
+# Override command prompt string?
+BASH_PS1_SYNTAX_OVERRIDE=no
+BASH_PS1_SYNTAX_OVERRIDESTR='[\u@\h \W]\$ '
+
+#######################################
+# Use colors for users?
+# Group 'sudo' members are considered as sysadmins.
+
+BASH_USER_COLORS=yes
+BASH_SYSADMIN_COLOR=$(bash_colorstring yellow)
+BASH_USER_COLOR=$(bash_colorstring default)
+BASH_ROOT_COLOR=$(bash_colorstring red)
+
+#######################################
+# Use different color for folders owned by the user and some other color for other folders?
+BASH_FOLDER_COLORS=yes
+BASH_USER_FOLDER_COLOR=$(bash_colorstring green)
+BASH_NOTOWNED_FOLDER_COLOR=$(bash_colorstring red)
+
+#######################################
+# Colors for ls command?
+BASH_LS_COLORS=yes
+
+#######################################
+# Show the name of this computer?
+BASH_SHOW_HOSTNAME=no
+
+# User and hostname separator settings
+BASH_HOSTNAME_SEP="@"
+BASH_HOSTNAME_SEP_COLORS=no
+BASH_HOSTNAME_SEP_COLOR=$(bash_colorstring gold)
+
+# Use color for hostname?
+BASH_HOSTNAME_COLORS=yes
+BASH_HOSTNAME_COLOR=$(bash_colorstring blue)
+
+#######################################
+# Hostname/user and folder separator settings
+
+BASH_FOLDER_SEP=":"
+BASH_FOLDER_SEP_COLORS=no
+BASH_FOLDER_SEP_COLOR=$(bash_colorstring default)
+
+#######################################
+# Suffix symbol settings
+
+BASH_SUFFIX_SYMBOL="$ "
+BASH_SUFFIX_SYMBOL_ROOT="# "
+BASH_SUFFIX_COLORS=no
+BASH_SUFFIX_COLOR=$(bash_colorstring default)
+
+##############################################################################
+# Timestamp
+
+# Show timestamp in the command prompt?
+BASH_SHOW_TIMESTAMP=yes
+
+# Example: 26/02/2018 21:33:19
+# "\D{%d/%m/%Y} \t"
+
+# Example: 26/02/2018
+# "\D{%d/%m/%Y}"
+
+# Example: 21:33:19
+# "\t"
+
+BASH_TIMESTAMP_FORMAT=" \! | \D{%d/%m/%Y} \t"
+BASH_TIMESTAMP_COLORS=no
+BASH_TIMESTAMP_COLOR=$(bash_colorstring default)
+
+#######################################
+# Return codes after command execution
+
+# Show command return code in bash?
+USE_RETCODE=yes
+# Print human readable text strings for each code?
+RETCODE_HUMAN=no
+# Use colors in error codes?
+RETCODE_COLORS=yes
+
+if [[ $USE_RETCODE == "yes" ]]; then
+
+    function RETCODE() {
+
+        local RET=$?
+
+        case $RET in
+            0)
+                local RETC=$(bash_colorstring green)
+                local RETH="ok"
+                ;;
+            1)
+                local RETC=$(bash_colorstring red)
+                local RETH="error"
+                ;;
+            2)
+                local RETC=$(bash_colorstring orange)
+                local RETH="misuse of shell builtin"
+                ;;
+            127)
+                local RETC=$(bash_colorstring orange)
+                local RETH="not found"
+                ;;
+            128)
+                local RETC=$(bash_colorstring red)
+                local RETH="invalid exit argument"
+                ;;
+            130)
+                local RETC=$(bash_colorstring purple)
+                local RETH="aborted"
+                ;;
+            *)
+                local RETC=$(bash_colorstring yellow)
+                local RETH="undefined exit code"
+                ;;
+        esac
+
+        if [[ $RETCODE_COLORS == "no" ]]; then
+            RETC=$(bash_colorstring default)
+        fi
+
+        if [[ $RETCODE_HUMAN == "yes" ]]; then
+                printf "Return code: ${RETC}$RET - $RETH$(bash_colorstring default)\n"
+        else
+                printf "Return code: ${RETC}$RET$(bash_colorstring default)\n"
+        fi
+ 
+    }
+    PROMPT_COMMAND=RETCODE
+fi
+
+##############################################################################
+# Set up ls command colors
+#
+if [[ $BASH_PS1_SHOW_COLORS == "yes" ]]; then
+
+    if [[ $BASH_LS_COLORS == "yes" ]]; then
+        eval "$(dircolors -b /etc/dircolors)"
+        alias ls='ls --color=auto'
+    fi
+fi
+
+#######################################
+# Set up starting and ending symbols
+#
+if [[ $BASH_PS1_START_COLORS == "yes" ]]; then
+    BASH_PS1_START_INSERT="${BASH_PS1_START_COLOR}${BASH_PS1_START}$(bash_colorstring default)"
+else
+    BASH_PS1_START_INSERT="${BASH_PS1_START}"
+fi
+
+if [[ $BASH_PS1_END_COLORS == "yes" ]]; then
+    BASH_PS1_END_INSERT="${BASH_PS1_END_COLOR}${BASH_PS1_END}$(bash_colorstring default)"
+else
+    BASH_PS1_END_INSERT="${BASH_PS1_END}"
+fi
+
+#######################################
+# Set up folder-specific colors
+#
+bash_foldercolor() {
+    # Change color if we are not owner of the current dir
+    # For root we always use green color
+    #
+    if [[ $BASH_FOLDER_COLORS == "yes" ]]; then
+        if [[ $(stat -c %u "$PWD") -eq $(id -u) ]] || [[ $(id -u) -eq 0 ]]; then
+            # Green color
+            printf "%s" "${BASH_USER_FOLDER_COLOR}"
+        else
+            # Red color
+            printf "%s" "${BASH_NOTOWNED_FOLDER_COLOR}"
+        fi
+    else
+        # White color // reset attributes
+        printf "%s" "$(bash_colorstring default)"
+    fi
+}
+
+#######################################
+# Set up user-specific colors
+#
+bash_usercolor() {
+
+    if [[ $BASH_USER_COLORS == "yes" ]] ;then
+
+        if [[ $(id -u) == 0 ]]; then
+            printf "%s" "${BASH_ROOT_COLOR}"
+        elif [[ $(groups | grep -o sudo) ]]; then
+            printf "%s" "${BASH_SYSADMIN_COLOR}"
+        else
+            printf "%s" "${BASH_USER_COLOR}"
+        fi
+    else
+        printf "%s" "$(bash_colorstring default)"
+    fi
+}
+
+#######################################
+# Set up computer hostname
+#
+bash_hostname() {
+    if [[ $BASH_SHOW_HOSTNAME == "yes" ]]; then
+
+        if [[ $BASH_HOSTNAME_SEP_COLORS == "yes" ]]; then
+            BASH_HOSTNAME_SEP_INSERT="${BASH_HOSTNAME_SEP_COLOR}${BASH_HOSTNAME_SEP}$(bash_colorstring default)"
+        else
+            BASH_HOSTNAME_SEP_INSERT="${BASH_HOSTNAME_SEP}"
+        fi
+
+        if [[ $BASH_HOSTNAME_COLORS == "yes" ]]; then
+            printf "%s" "\u$(bash_colorstring default)${BASH_HOSTNAME_SEP_INSERT}${BASH_HOSTNAME_COLOR}\h$(bash_colorstring default)"
+        else
+            printf "%s" "\u$(bash_colorstring default)${BASH_HOSTNAME_SEP_INSERT}\h"
+        fi
+    else
+        printf "%s" "\u$(bash_colorstring default)"
+    fi
+}
+
+#######################################
+# Set up folder separator
+#
+bash_folder_separator() {
+    if [[ $BASH_FOLDER_SEP_COLORS == "yes" ]] && [[ $BASH_SHOW_HOSTNAME == "yes" ]]; then
+        printf "%s" "${BASH_FOLDER_SEP_COLOR}${BASH_FOLDER_SEP}$(bash_colorstring default)"
+    else
+        printf "%s" "${BASH_FOLDER_SEP}"
+    fi
+}
+
+#######################################
+# Set up timestamp
+#
+bash_timestamp() {
+    if [[ $BASH_SHOW_TIMESTAMP == "yes" ]]; then
+        if [[ $BASH_TIMESTAMP_COLORS == "yes" ]]; then
+            printf "%s" "${BASH_TIMESTAMP_COLOR}${BASH_TIMESTAMP_FORMAT}$(bash_colorstring default) - "
+        else
+            printf "%s" "${BASH_TIMESTAMP_FORMAT} - "
+        fi
+    else
+        printf ""
+    fi
+}
+
+#######################################
+# Set up suffix symbol
+#
+bash_suffixsymbol() {
+
+    if [[ $(id -u) -eq 0 ]]; then
+        BASH_SUFFIX=${BASH_SUFFIX_SYMBOL_ROOT}
+    else
+        BASH_SUFFIX=${BASH_SUFFIX_SYMBOL}
+    fi
+
+    if [[ $BASH_SUFFIX_COLORS == "yes" ]]; then
+        printf "%s" "${BASH_SUFFIX_COLOR}${BASH_SUFFIX}$(bash_colorstring default)"
+    else
+        printf "%s" "${BASH_SUFFIX}"
+    fi
+}
+
+#######################################
+# Export command prompt string
+#
+if [[ $BASH_PS1_SHOW_COLORS != "yes" ]]; then
+
+    BASH_PS1_START_COLORS=$(bash_colorstring default)
+    BASH_PS1_END_COLORS=$(bash_colorstring default)
+
+    BASH_USER_COLOR=$(bash_colorstring default)
+    BASH_ROOT_COLOR=$(bash_colorstring default)
+
+    BASH_USER_FOLDER_COLOR=$(bash_colorstring default)
+    BASH_NOTOWNED_FOLDER_COLOR=$(bash_colorstring default)
+
+    BASH_HOSTNAME_COLOR=$(bash_colorstring default)
+
+    BASH_SUFFIX_COLOR=$(bash_colorstring default)
+
+    BASH_TIMESTAMP_COLOR=$(bash_colorstring default)
+fi
+
+ps1_syntax() {
+    # Default string
+    export PS1="$BASH_PS1_START_INSERT$(bash_timestamp)$(bash_usercolor)$(bash_hostname)$(bash_folder_separator) \$(bash_foldercolor)\W$(bash_colorstring default)$BASH_PS1_END_INSERT$(bash_suffixsymbol)"
+}
+
+if [[ $BASH_PS1_SYNTAX_OVERRIDE == "no" ]]; then
+
+    # If we want to use different PS1 variable for local logins...
+    if [[ $BASH_PS1_DIFFERENT_LOCAL == "yes" ]] && [[ $ENABLE_SERVER_ENV == "yes" ]]; then
+
+        # Check if we are local login...
+        # Returns 0 (true) if we are, otherwise 1 (false)
+        if [[ ! $(export -p | grep SSH_TTY) ]]; then
+            export PS1=${BASH_PS1_LOCAL}
+        else
+            ps1_syntax
+        fi
+    else
+        ps1_syntax
+    fi
+
+elif [[ $BASH_PS1_SYNTAX_OVERRIDE == "yes" ]]; then
+
+    # User override string
+    export PS1=${BASH_PS1_SYNTAX_OVERRIDESTR}
+
+else
+
+    # Fallback string
+    export PS1='[\u@\h \W]\$ '
+fi
+
+##############################################################################
+# Common messages for sudo checks
+#
+
+# Ask password every time for sudo commands?
+SUDO_ASKPASS=yes
+
+# Separator
+function INFO_SEP() {
+    # http://wiki.bash-hackers.org/snipplets/print_horizontal_line#a_line_across_the_entire_width_of_the_terminal
+    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+}
+
+# Default information printed to user
+INFO_MSG="\
+$(bash_colorstring orange)\
+Privileged permissions required\
+$(bash_colorstring default)\
+"
+#
+# If any of the following messages is printed by a command,
+# then try the command with sudo prefix
+ERROR_MSGS="\
+Permission denied|\
+Operation not permitted|\
+you cannot perform this operation unless you are root|\
+You may not view or modify password information for root\
+"
+
+#######################################
+# Check if the current user belongs to sudo
+# or is root
+#
+sudocheck() {
+
+    if [[ $UID -ne 0 ]]; then
+
+        if [[ ! $(printf $(groups | grep sudo &> /dev/null)$?) -eq 0 ]]; then
+            printf "Current user does not have sufficient permissions and does not belong to 'sudo' group.\n"
+            return 1
+        else
+
+            if [[ $SUDO_ASKPASS == "yes" ]]; then
+                sudo -k
+            fi
+
+            return 0
+        fi
+    else
+        return 0
+    fi
+
+}
+
+#######################################
+# Execute with sudo if no permissions
+# to execute a command otherwise
+#
+# NOTE: This does not work for nano or cd commands
+#
+trap 'sudoperms' ERR
+
+function sudoperms() {
+
+    # Previous command (ERR) always returns value 1 which is not
+    # we don't want if the following sudo command succeeds
+    #
+    unset PROMPT_COMMAND
+
+    local CMD="${BASH_COMMAND}"
+    local i=0
+
+    # WORKAROUND
+    # rm command has an interactive prompt where
+    # it asks for confirmation for file deletion
+    # However, interactive prompt does not work
+    # very well here, thus we hook --force/-f
+    # option to the original rm command
+    #
+    if [[ "${CMD}" =~ ^rm[[:space:]] ]]; then
+        CMD=$(printf "${CMD}" | sed -E 's/^rm/rm -f/')
+    fi
+
+    while [[ $i < 1 ]]; do
+
+        if [[ $(${CMD} 2>&1 > /dev/null | grep -E "${ERROR_MSGS}") ]]; then
+            printf "${INFO_MSG}\n"
+            sudocheck
+            if [[ $? -eq 0 ]]; then
+                INFO_SEP
+
+                # Execute the failed command with sudo and get its return code
+                sudo bash -c "${CMD}" && RETCODE
+            fi
+        fi
+
+        let i++
+    done
+
+}
+
+#######################################
+# If nano doesn't have correct permissions, use sudo
+# automatically for it
+#
+sudonano() {
+
+    # Prevent file names having spaces to be splitted up to
+    # multiple arguments by setting local IFS variable to be
+    # a newline instead of space
+    #
+    local IFS=$'\n'
+
+    # Get all input arguments into a new array
+    local i=0
+    for arg in "${@}"; do
+        ARGS[$i]="${arg}"
+        let i++
+    done
+
+    # If the first argument is not -h or --help, apply other arguments, too
+    #
+    if [[ "${1}" != "-h" ]] || [[ "${1}" != "--help" ]]; then
+        # If the last input argument is a file, delete
+        # it from the existing ARGS array
+        # and put it into a new variable FILE .
+        # Check owner of the file
+        #
+        # If no input file is given, treat
+        # all arguments as options for nano editor
+        #
+        if [[ -f "${ARGS[-1]}" ]]; then
+
+            # Get full file path (e.g. if user types just 
+            # name of a file in the current folder)
+            local FILE=$(readlink -f "${ARGS[-1]}")
+
+            # Set single quotes around the file name with full path
+            # This is just for stat command below
+            #
+            local FILE=$(printf "${FILE}" | sed "s/\(.*\)\r/'\1'/g")
+            local OWNER=$(stat -c %u "${FILE}")
+
+            # Remove filename from the arguments list since it
+            # is not actually an argument we want to supply to
+            # nano. We need to treat the filename in a special
+            # way unlike other arguments
+            #
+            unset 'ARGS[${#ARGS[@]}-1]'
+
+            # Add escape prefixes to every whitespace we have
+            # in the filename because single quotes are
+            # not well preserved when supplying filename
+            # to nano command
+            #
+            if [[ "${FILE}" =~ [[:space:]] ]]; then
+                FILE=$(printf "${FILE}" | sed 's/ /\\ /g')
+            fi
+
+            # If arguments were given, put them before
+            # the filename. If no arguments were given,
+            # just supply the filename to nano command
+            #
+            if [[ -n ${ARGS[*]} ]]; then
+                local OPTIONS="${ARGS[*]} ${FILE}"
+            else
+                local OPTIONS="${FILE}"
+            fi
+        else
+            local OPTIONS="${ARGS[*]}"
+        fi
+    else
+        local OPTIONS="${1}"
+    fi
+
+    if [[ $UID -ne 0 ]]; then
+        if [[ -v OWNER ]]; then
+            if [[ $OWNER -ne $UID ]]; then
+                printf "${INFO_MSG}\n"
+                sudocheck
+                if [[ $? -eq 0 ]]; then
+                    INFO_SEP
+                    sudo nano ${OPTIONS}
+                fi
+            else
+                nano ${OPTIONS}
+            fi
+        else
+            nano ${OPTIONS}
+        fi
+    else
+        nano ${OPTIONS}
+    fi
+
+    # In a case of failure (e.g. return code 1)
+    # we want to get the real code number
+    # That's why we call RETCODE function
+    # which returns the right value for
+    # the previous command
+    #
+    RETCODE
+
+    # We need to unset PROMPT_COMMAND variable
+    # after RETCODE function execution
+    # Otherwise we get false-positive
+    # return value (return code 0) for
+    # the previous command, no matter
+    # whether it succeeded or failed
+    #
+    unset PROMPT_COMMAND
+
+}
+
+if [[ $(printf $(which nano &> /dev/null)$?) -eq 0 ]]; then
+    alias nano='sudonano'
+fi
+
+#######################################
+# If find doesn't have correct permissions, use sudo
+# automatically for it
+#
+: '
+sudofind() {
+
+    if [[ ! "${1}" =~ ^-{1,2}[a-z]* ]]; then
+        if [[ ! -d "${1}" ]]; then
+            printf "$(bash_colorstring red)Error:$(bash_colorstring default) ${1}: No such directory\n"
+            return 1
+        fi
+    else
+        find "${1}"
+    fi
+
+    if [[ $UID -ne 0 ]]; then
+
+        local i=0
+        for arg in "${@}"; do
+            if [[ $arg =~ [[:space:]] ]]; then
+                arg=\"$arg\"
+            fi
+            local ARGS[$i]="${arg}"
+            let i++
+        done
+
+        local DIRPATH="${ARGS[0]}"
+        local OWNER_STR=$(stat -c %U "${DIRPATH}")
+        local USER_STR=$(id -un $UID)
+
+        if [[ $OWNER_STR == $USER_STR ]]; then
+            find "${ARGS[*]}"
+        else
+            sudo SUDOARGS="${ARGS[*]}" -u $OWNER_STR bash -c 'find "${SUDOARGS}"'
+        fi
+    else
+        find "${ARGS[*]}"
+    fi
+
+}
+
+alias find='sudofind'
+'
+
+#######################################
+# If we don't have access to a directory, check dir owner
+# and access the folder as that user with sudo
+#
+sudocd() {
+
+    if [[ -d "${1}" ]]; then
+
+        if [[ $UID -ne 0 ]]; then
+
+            if [[ $(stat -c %u "${1}") -ne $UID ]]; then
+
+                local PERMS=$(stat -c %A "${1}")
+
+                if [[ $(echo "${PERMS:9:1}") == "x" ]]; then
+                    cd "${1}"
+                else
+
+                    printf "${INFO_MSG}\n"
+                    sudocheck
+                    if [[ $? -eq 0 ]]; then
+                        INFO_SEP
+                        local OWNER=$(stat -c %U "${1}")
+                        printf "Opening $OWNER shell environment\n"
+                        sudo GODIR="${1}" -u $OWNER bash -c 'cd "${GODIR}"; $SHELL'
+                    fi
+                fi
+            else
+                cd "${1}"
+            fi
+        else
+            cd "${1}"
+        fi
+    elif [[ -z "${1}" ]]; then
+        cd "${HOME}"
+    else
+        printf "$(bash_colorstring red)Error:$(bash_colorstring default) No such directory\n"
+        return 1
+    fi
+
+}
+
+alias cd='sudocd'
