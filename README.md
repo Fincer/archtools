@@ -20,4 +20,4 @@ This repository has various practical developer/sysadmin-oriented tools to Arch 
 
 ## License
 
-This repository uses GPLv3 license. Please see [LICENSE](https://github.com/Fincer/archlinux-tools/blob/master/LICENSE) files for details.
+This repository uses GPLv3 license. Please see [LICENSE](https://github.com/Fincer/archtools/blob/master/LICENSE) files for details.
