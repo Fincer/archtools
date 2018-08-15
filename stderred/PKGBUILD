@@ -1,0 +1,63 @@
+# Maintainer: Pekka Helenius (~Fincer) <fincer89@hotmail.com>
+
+pkgname=stderred
+pkgver=1.0.37.g399e3b1
+pkgrel=1
+pkgdesc="Hooks into STDERR output to print all CLI errors in red"
+url="https://github.com/sickill/stderred"
+arch=(any)
+license=(other)
+depends=()
+makedepends=(git cmake make gcc glibc lib32-glibc)
+source=($pkgname::git://github.com/sickill/stderred.git
+patch_brightred.patch)
+sha256sums=('SKIP'
+            '1a0f2f4e32d2e62bd42128cbb1a05f9e4374670fa929d48453d459478a5b0d05')
+
+pkgver() {
+    cd "$srcdir/$pkgname"
+    _git_version="$(git describe --tags | sed 's/\-/\./g; s/v//1')"
+    printf "%s" "$_git_version"
+}
+
+prepare() {
+    cd "$srcdir/$pkgname/"
+    patch -Np1 -i ../patch_brightred.patch
+}
+
+build() {
+    mkdir -p "$srcdir/$pkgname/src/"
+
+    # 32-bit
+    cd "$srcdir/$pkgname/src/"
+    mkdir lib32
+    cd lib32
+    CFLAGS='-m32' cmake ../
+    make
+
+    # 64-bit
+    cd "$srcdir/$pkgname/src/"
+    mkdir lib
+    cd lib
+    CFLAGS='-m64' cmake ../
+    make
+    
+}
+
+package() {
+    mkdir -p "$pkgdir/usr/"{bin,lib,lib32,share/stderred}
+    
+    install -m755 "$srcdir/$pkgname/src/lib"/libpolyfill.so "$pkgdir/usr/lib"
+    install -m755 "$srcdir/$pkgname/src/lib"/libstderred.so "$pkgdir/usr/lib"
+    install -m755 "$srcdir/$pkgname/src/lib"/libtest_stderred.so "$pkgdir/usr/lib"
+    
+    install -m755 "$srcdir/$pkgname/src/lib32"/libpolyfill.so "$pkgdir/usr/lib32"
+    install -m755 "$srcdir/$pkgname/src/lib32"/libstderred.so "$pkgdir/usr/lib32"
+    install -m755 "$srcdir/$pkgname/src/lib32"/libtest_stderred.so "$pkgdir/usr/lib32"
+    
+    install -m644 "$srcdir/$pkgname/usr/share/stderred/"stderred.sh "$pkgdir/usr/share/stderred/"
+    install -m755 "$srcdir/$pkgname/usr/bin/"stderred "$pkgdir/usr/bin"
+    
+    install -m755 "$srcdir/$pkgname/usr/bin/"stderred "$pkgdir/usr/bin/"
+    install -m644 "$srcdir/$pkgname/usr/share/stderred/"stderred.sh "$pkgdir/usr/share/stderred/"
+}

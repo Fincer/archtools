@@ -1,0 +1,27 @@
+0.4
+ Simon Lipp :
+ * Added cleaned up bind and connect functions 
+ * Added an install target to the Makefile
+ * Code cleanup (make heavy use of the prepocessor)
+ * Bug fixes
+ Luc Dufresne :
+ * Very small bugfix in connect function
+ * Fix a problem with 'stat' which prevented libetc to work on amd64
+ * Added a blacklist of programs for which libetc should do nothing
+ ($LIBETC_BLACKLIST)
+ * Added a hack to make a symlink of ~/.Xauthority in $XDF_CONFIG_HOME
+ * switch to GPLv3
+
+0.3
+ * Code cleanup (http://linuxfr.org/comments/742358.html#742358)
+ * bugfixes (aumix now works with libetc)
+ * intercept remove (for audacity)
+
+0.2
+ * changed the default directory to $HOME/.config
+   and use $XDG_CONFIG_HOME instead of $HOME/$ETC
+ * intercept creat64, mkstemp and mkstemp64
+   So libetc now works fine with the Gimp and fontconfig
+
+0.1
+ * initial release

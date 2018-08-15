@@ -1,0 +1,11 @@
+--- a/src/stderred.c
++++ b/src/stderred.c
+@@ -55,7 +55,7 @@
+ 
+   start_color_code = getenv("STDERRED_ESC_CODE");
+   if (start_color_code == NULL) {
+-    start_color_code = "\x1b[31m";
++    start_color_code = "\x1b[91m";
+   }
+   start_color_code_size = strlen(start_color_code);
+   end_color_code_size = strlen(end_color_code);
