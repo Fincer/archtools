@@ -29,7 +29,6 @@ arch-audit bc # risks.sh
 glibc # missinglibs.sh
 util-linux # killprocess.sh (kill command)
 stderred # bash.custom LD_PRELOAD
-libetc # bash.custom LD_PRELOAD
 )
 makedepends=(git)
 source=(
