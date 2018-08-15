@@ -28,7 +28,8 @@ tar xz bzip2 unrar gzip unzip p7zip cabextract #extract.sh
 arch-audit bc # risks.sh
 glibc # missinglibs.sh
 util-linux # killprocess.sh (kill command)
-stderred # bash.custom
+stderred # bash.custom LD_PRELOAD
+libetc # bash.custom LD_PRELOAD
 )
 makedepends=(git)
 source=(
