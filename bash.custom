@@ -805,7 +805,7 @@ sudocd() {
 
                 local PERMS=$(stat -c %A "${1}")
 
-                if [[ $(echo "${PERMS:9:1}") == "x" ]]; then
+                if [[ $(echo "${PERMS:9:1}") =~ x|t ]]; then
                     cd "${1}"
                 else
 
