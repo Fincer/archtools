@@ -593,8 +593,6 @@ sudocheck() {
 #
 # NOTE: This does not work for nano or cd commands
 #
-trap 'sudoperms' ERR
-
 function sudoperms() {
 
     # Previous command (ERR) always returns value 1 which is not
@@ -603,7 +601,6 @@ function sudoperms() {
     unset PROMPT_COMMAND
 
     local CMD="${BASH_COMMAND}"
-    local i=0
 
     # WORKAROUND
     # rm command has an interactive prompt where
@@ -616,23 +613,22 @@ function sudoperms() {
         CMD=$(printf "${CMD}" | sed -E 's/^rm/rm -f/')
     fi
 
-    while [[ $i < 1 ]]; do
+    if [[ $(${CMD} 2>&>1 > /dev/null | grep -E "${ERROR_MSGS}") ]]; then
+        printf "${INFO_MSG}\n"
+        sudocheck
+        if [[ $? -eq 0 ]]; then
+            INFO_SEP
 
-        if [[ $(${CMD} 2>&1 > /dev/null | grep -E "${ERROR_MSGS}") ]]; then
-            printf "${INFO_MSG}\n"
-            sudocheck
-            if [[ $? -eq 0 ]]; then
-                INFO_SEP
-
-                # Execute the failed command with sudo and get its return code
-                sudo bash -c "${CMD}" && RETCODE
-            fi
+            # Execute the failed command with sudo and get its return code
+            sudo bash -c "${CMD}" && RETCODE
         fi
-
-        let i++
-    done
-
+    fi
+    checkdone=
 }
+ 
+if [[ -z checkdone ]]; then
+  trap 'sudoperms' ERR
+fi
 
 #######################################
 # If nano doesn't have correct permissions, use sudo
