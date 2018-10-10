@@ -156,4 +156,4 @@ fi
 
 ##################################
 
-rm -rf ./{"${INPUT}".1,*trunk*} 2>/dev/null
+rm -rf ./{"${INPUT}"*.1,*trunk*} 2>/dev/null
