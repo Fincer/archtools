@@ -41,6 +41,8 @@ else
     fi
 fi
 
+INPUT="${CURDIR}"
+
 ##################################
 
 function check_database() {
@@ -154,4 +156,4 @@ fi
 
 ##################################
 
-rm -Rf ./{,*trunk*} 2>/dev/null
+rm -rf ./{"${INPUT}".1,*trunk*} 2>/dev/null
