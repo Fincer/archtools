@@ -56,7 +56,7 @@ function check_database() {
             DOMAINURL=$AUR_DOMAINURL
         fi
 
-        wget -q -T 5 "$BASEURL" -o -
+        wget -q -T 10 "$BASEURL" -o -
         if [[ $? -eq 0 ]]; then
             wget -q "$BASEURL"
             if [[ "$1" != "$AUR_DOMAINURL" ]]; then
