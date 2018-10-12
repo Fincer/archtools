@@ -83,7 +83,7 @@ function arch_repos_deepscan() {
 
         ARCH_DB_URL="https://www.archlinux.org/packages/$ARCH_DB/x86_64/$CURDIR"
 
-        wget -q -T 5 "$ARCH_DB_URL" -o -
+        wget -q -T 10 "$ARCH_DB_URL" -o -
         if [[ $? -eq 0 ]]; then
             wget -q "$ARCH_DB_URL"
             mv ./$CURDIR ./baseurl_2.html
