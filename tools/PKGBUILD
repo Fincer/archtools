@@ -19,7 +19,7 @@ url="https://github.com/Fincer/archtools"
 arch=(any)
 license=(GPL)
 depends=(coreutils bash grep sed
-pacman # listpkg.sh, bininfo.sh, pkginfo.sh, buildpkg.sh, installlocal.sh, missinglibs.sh, nowner.sh, findpkg.sh, pkgdeps.sh, pkgstr.sh, risks.sh, showpkg.sh
+pacman # listpkg.sh, bininfo.sh, pkginfo.sh, buildpkg.sh, installlocal.sh, missinglibs.sh, nowner.sh, findpkg.sh, findinpkg.sh, pkgdeps.sh, pkgstr.sh, risks.sh, showpkg.sh
 perl # findpkg.sh, genmac.sh
 wget # getsource.sh
 file # nowner.sh
@@ -36,6 +36,7 @@ tputcolors.sh
 extract.sh
 findmatch.sh
 findpkg.sh
+findinpkg.sh
 genmac.sh
 getsource.sh # TODO: More implementation needed. See the file for details
 nowner.sh # TODO: More implementation needed. See the file for details
@@ -62,15 +63,17 @@ if [[ $server_environment == "true" ]]; then
     source+=(ssh_timezone.sh)
 fi
 
-sha256sums=('623b794a8a537649cc434b496dbf1f018aeea99f57f11d0719f80e495ca438b6'
+sha256sums=('f5455279ae48739b4ce16b10061e898f80cff0c9b24100f499015cae618fb8c6'
+            '623b794a8a537649cc434b496dbf1f018aeea99f57f11d0719f80e495ca438b6'
             '568dba0eb0dfe1875980484fe473bbbd4397bdc04622f6177992ee75ca1b065f'
             'ed4e06ceb5aff36ea66ce9de74f5ff2236ab2f92a9419d79d6fefe5a1b013859'
+            '60d859fead290ba0c39502a21eb093aa63b384963bf83b60d93c2fcb74655ef6'
             'a3cf8e77af8a49935c3e9a579354f761ab7ca8c2f94760012b9e23a196307f8f'
-            '047bbe110d75a6e44f427675134c0594bc413efd57ca16836ff1acd607601c10'
-            'a56c4e7b99078da4324c425fe4da5dc7c10c55d7fac62c8d23a86cfcf4abae0e'
-            '4b1015e10c0f4e4e9e0dd64533aea1ffe914f3ce6760bf6293f056b4069a4f37'
+            '6783896c716045da0e38ae11ccaac491b6166b15ef9273118dcbe662b2eca97e'
+            'e25a0d8b425fd3f05414b6f1f6f5fce5832bb842691dad5aff4c7ac5aaa7a9fd'
+            '28fe6983f144e41d57589fefac6d60b84ff3b0968cc4b274276b34802ff03dd0'
             '67d5627b20ec75d94cb89f9f193daa8a8018d1453d387e0306c0032f5a9b6b30'
-            '88e37be0de270d023712d4bae852c54292541ca5510d09c5a1316fa5958f117c'
+            'd1427a149f7092fd2ac8e0f81167f7c4eb6a318918f96b2d5301a8b750796c5d'
             'abc140033891cc4564d71e8487f6cd1e54add761417cc772652542daf7352f44'
             '8b76a175d7cc767519d1e3519d1fd874cc19cc529e08a27138948f8a1907ac6a'
             '6886176293cb3ed131dd83e2ca3aa15f70c559e265534e195fa8848f2d02f659'
@@ -82,7 +85,7 @@ sha256sums=('623b794a8a537649cc434b496dbf1f018aeea99f57f11d0719f80e495ca438b6'
             '4baf8c7d1032cafb8535dc4d53c42b7e7f2da6839bde791c31104a3f67eb845b'
             'e179f9b18d6869558a97530101502ae6b445d3ef430e2e4359d015f214292093'
             '1aae9db8652179e18691fd51c687ab393672f380084e8777145572a5699bf5cf'
-            '594453fefd07471e4aa167c486c77fbf589c5ee838cb0f33d3b5399fabff5ee6'
+            '93ee0e990f36a5641e4f9fb4ba851e3db47ff6f01fdfad8dd169b83c546ecae9'
             '40fd211e7b4a21ca61be81a809ee47f58adc6cd220218a20a0c7e65e1534c6ca')
 
 package() {
@@ -98,17 +101,16 @@ package() {
     mv "$pkgdir"/usr/bin/$sh $(echo "$pkgdir"/usr/bin/$sh | sed 's/\.sh//')
   done
 
-  
   msg2 '
-  
+
   In /etc/bash.bashrc file, replace line
-  
+
   PS1="[\\u@\\h \\W]\\$ "
-  
+
   with
-  
+
   [[ -f /etc/bash.custom ]] && . /etc/bash.custom || PS1="[\\u@\\h \\W]\\$ "
-  
+
   After that, you can change bash settings globally by editing /etc/bash.custom file
   '
 
