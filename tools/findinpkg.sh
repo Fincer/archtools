@@ -18,34 +18,49 @@ if [[ ! $(pacman -Qq "${1}" 2> /dev/null) ]]; then
   help
 fi
 
-files=()
-filename=""
-lines=()
+filematches=()
 lines_total=0
 files_total=0
+typeset -A FILEMATCHES
 esc=$(printf '\033')
 
 for file in $(pacman -Ql "${1}" | sed "s/^${1}\s//g"); do
   if [[ -f "${file}" ]]; then
 
-    line=$(grep --line-number --with-filename --binary-files=without-match -i "${2}" "${file}" | sed -r "s/^(.*?:)([0-9]+):.*/\1\2/g")
+    filestr=$(grep --line-number --with-filename --binary-files=without-match -i "${2}" "${file}" | sed -r "s/^(.*?:)([0-9]+):.*/\1\2/g")
 
-    for l in ${line[@]}; do
-
-      linenum=$(printf '%s' ${l} | sed -r 's/^.*?:([0-9]+$)/\1/')
-      filename_=$(printf '%s' ${l} | sed -r 's/^(.*?):[0-9]+$/\1/')
-
-      lines+=(${linenum})
-
-      if [[ ! "${filename}" == "${filename_}" ]]; then
-        echo "${esc}[35m${filename_}${esc}[92m: ${esc}[31m${lines[*]}${esc}[0m"
-        lines_total=$(( ${lines_total} + ${#lines[@]} ))
-        let files_total++
-        lines=()
-      fi
-
-      filename="${filename_}"
+    # In some rare cases grepped files are presented on the same line
+    for filestr in ${filestr[@]}; do
+      filematches+=(${filestr})
     done
+
   fi
 done
+
+for filematch in ${filematches[@]}; do
+  filename_=$(printf '%s' "${filematch}" | sed -r 's/^(.*?):[0-9]+$/\1/')
+
+    if [[ ${FILEMATCHES[$filename_]} == "" ]]; then
+      lines=()
+      echo "Processing file: ${filename_}"
+
+      # Get all occurences
+      singlefile=$(echo ${filematches[@]} | grep -oE "(${filename_}:[0-9]+)" )
+
+      for occurence in ${singlefile[@]}; do
+        linenum=$(printf '%s' "${occurence}" | sed -r 's/^.*?:([0-9]+$)/\1/')
+        lines+=(${linenum})
+      done
+
+      FILEMATCHES+=([$filename_]="${lines[*]}")
+      lines_total=$(( ${lines_total} + ${#lines[@]} ))
+      let files_total++
+
+    fi
+done
+
+for filename in ${!FILEMATCHES[@]}; do
+  echo "${esc}[35m${filename}${esc}[92m: ${esc}[31m${FILEMATCHES[$filename]}${esc}[0m"
+done
+
 printf "\nFound %d matching lines for pattern '%s' in %d files in package '%s'.\n\n" ${lines_total} "${2}" ${files_total} "${1}"
