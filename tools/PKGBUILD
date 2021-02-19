@@ -29,6 +29,7 @@ arch-audit bc # risks.sh
 glibc # missinglibs.sh
 util-linux # killprocess.sh (kill command)
 stderred # bash.custom LD_PRELOAD
+gcc
 )
 makedepends=(git)
 source=(
@@ -57,6 +58,8 @@ specialchars.sh
 whichcmd.sh
 killns.sh
 psns.sh
+whichport.c
+whichservice.c
 bash.custom
 https://raw.github.com/trapd00r/LS_COLORS/master/LS_COLORS)
 
@@ -104,6 +107,11 @@ package() {
     mv "$pkgdir"/usr/bin/$sh $(echo "$pkgdir"/usr/bin/$sh | sed 's/\.sh//')
   done
 
+  for i in ./*.c; do
+    gcc $i -o $(echo $i | sed 's/\.c$//')
+    install -m755 $i "$pkgdir"/usr/bin/
+  done
+
   msg2 '
 
   In /etc/bash.bashrc file, replace line
@@ -120,4 +128,3 @@ package() {
   #msg2 "You can change bash settings globally by editing /etc/bash.custom file"
 
 }
-
