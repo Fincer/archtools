@@ -24,7 +24,7 @@ files_total=0
 typeset -A FILEMATCHES
 esc=$(printf '\033')
 
-for file in $(pacman -Ql "${1}" | sed "s/^${1}\s//g"); do
+for file in $(pacman -Qlq "${1}"); do
   if [[ -f "${file}" ]]; then
 
     filestr=$(grep --line-number --with-filename --binary-files=without-match -i "${2}" "${file}" | sed -r "s/^(.*?:)([0-9]+):.*/\1\2/g")
