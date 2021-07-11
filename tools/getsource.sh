@@ -1,159 +1,215 @@
-#!/bin/bash
-
-#    getsource - Get build files for Arch/AUR packages on Arch Linux
-#    Copyright (C) 2018  Pekka Helenius
+#!/usr/bin/env bash
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#   getsource - Get build files from Arch Linux official and AUR repositories
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#   Copyright (C) 2021  Pekka Helenius <pekka.helenius@fjordtek.com>
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-###########################################################
-
-# TODO: Add support for wider range of processor architectures (below)
-# TODO: Add directory support (getsource wine ~/winesource)
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# TODO: Add support for wider range of processor architectures
+# TODO: Add directory support (e.g. getsource wine ~/winesource)
 # TODO: create subdir for source files automatically to the current main dir
 
-###########################################################
+LIBRARY=${LIBRARY:-'/usr/share/makepkg'}
 
-ARCH_DOMAINURL="https://git.archlinux.org"
-ARCH_GITBASES=('packages.git' 'community.git')
+source "$LIBRARY/util/message.sh"
 
-AUR_DOMAINURL="https://aur.archlinux.org"
-AUR_GITBASES=('aur.git')
+# check if messages are to be printed using color
+if [[ -t 2 && $USE_COLOR != "n" ]]; then
+    colorize
+else
+    unset ALL_OFF BOLD BLUE GREEN RED YELLOW
+fi
 
-CURDIR=$(pwd | awk '{print $NF}' FS=/)
+PACKAGE=$(pwd | awk '{print $NF}' FS=/)
 
 if [[ -n "$1" ]]; then
-    CURDIR="$1"
+    PACKAGE="$1"
 else
-    read -r -p "Source package name? [Default: $CURDIR] " response
+    read -r -p "Source package name? [Default: $PACKAGE ] " response
     if [[ -n $response ]]; then
-        CURDIR=$response
+        PACKAGE=$response
+    else
+      echo "Assuming current dir name [ $PACKAGE ]"
     fi
 fi
 
 INPUT="${CURDIR}"
 
+BUILDSCRIPT="PKGBUILD"
+URLFILE="baseurl.html"
+
+ARCHIVEFORMATS=(
+  'tar.gz'
+  'tar.xz'
+  'tar.lz'
+  'tar.zst'
+)
+
 ##################################
 
-function check_database() {
-    for GITBASE in ${2}; do
+DBS_TO_CHECK=('arch' 'aur' 'arch_deepscan')
 
-        if [[ "$1" != "$AUR_DOMAINURL" ]]; then
-            BASEURL="$1/svntogit/$GITBASE/tree/trunk?h=packages/$CURDIR"
-            DOMAINURL=$ARCH_DOMAINURL
-        else
-            BASEURL="$1/cgit/$GITBASE/snapshot/$CURDIR.tar.gz"
-            DOMAINURL=$AUR_DOMAINURL
+ARCH_DATABASES=(
+  'core'
+  'extra'
+  'community'
+  'community-testing'
+)
+
+# TODO
+# Fetch from pacman.conf
+CUSTOM_DATABASES=()
+
+ARCH_GITBASES=(
+  'archlinux/svntogit-packages'
+)
+
+##################################
+
+function get_url() {
+  if ! wget -q -T 10 "${1}" -O - >/dev/null; then return 1; fi
+  if wget -q -c "${1}" -O "${2}"; then return 0; fi
+  return 1
+}
+
+function fetch_database() {
+
+  case "${1}" in
+    #custom) TODO
+      #BASEURL="<get-from-pacman.conf"
+      # Doesn't need separate DOMAINURL/BASEURL schema
+
+      #get_url archive "${BASEURL}" && \
+      #tar xf "$PACKAGE.${ARCHIVEFORMAT}" && \
+      #break
+      #;;
+    arch)
+      GITBASES=(${ARCH_GITBASES[@]})
+      DOMAINURL="https://github.com"
+      REPOMSG="Using Arch Linux official repositories"
+
+      for GITBASE in ${GITBASES[@]}; do
+        BASEURL="${DOMAINURL}/${GITBASE}/tree/packages/${PACKAGE}/trunk"
+
+        if get_url "${BASEURL}" "${URLFILE}"; then
+          FILENAMES=()
+
+          FILEHREFS=( $(grep -oP '(?<=data-pjax).*?(?=\<\/a)' "${URLFILE}" | sed -r "s/.*href=[\"|'](.*)[\"|']>.*/\1/; s/\/blob//g" | grep trunk) )
+          for i in ${FILEHREFS[@]}; do
+            FILENAMES+=( $(echo "${i}" | sed 's/.*\///g') )
+          done
+          DOMAINURL="https://raw.githubusercontent.com"
+          download_sourcefiles && return 0
         fi
+      done
+      return 1
+      ;;
+    aur)
+      local ISSNAPSHOT
+      DOMAINURL="https://aur.archlinux.org"
+      local SNAPSHOTURL="${DOMAINURL}/packages/${PACKAGE}/"
+      REPOMSG="Using Arch Linux user repositories (AUR)"
 
-        wget -q -T 10 "$BASEURL" -o -
-        if [[ $? -eq 0 ]]; then
-            wget -q "$BASEURL"
-            if [[ "$1" != "$AUR_DOMAINURL" ]]; then
-                mv ./trunk?h=packages%2F$CURDIR ./baseurl.html
-            else
-                tar xf "$CURDIR.tar.gz"
-            fi
-            break
-        fi
-    done
+      if get_url "${SNAPSHOTURL}" "${URLFILE}"; then
+        FILEHREFS=($(grep -oP '(?<=href\=\"\/).*?(?=\"\>Download snapshot)' "${URLFILE}"))
+        FILENAMES=($(grep -oP '(?<=snapshot\/).*?(?=\"\>Download snapshot)' "${URLFILE}"))
+        download_sourcefiles && return 0
+      fi
+      return 1
+      ;;
+    arch_deepscan)
+      arch_repos_deepscan
+      ;;
+  esac
 
-    if [[ ! -f ./baseurl.html ]]; then
-        return 1
-    fi
+  [[ -f "${URLFILE}" ]] || return 1
+
 }
 
 ##################################
 
 function arch_repos_deepscan() {
 
-    ARCH_DATABASES=(core extra community community-testing)
+  for ARCH_DB in ${ARCH_DATABASES[@]}; do
+    ARCH_DB_URL="https://www.archlinux.org/packages/${ARCH_DB}/x86_64/${PACKAGE}"
+    get_url "${ARCH_DB_URL}" "${URLFILE}"
+  done
 
-    for ARCH_DB in ${ARCH_DATABASES[*]}; do
+  if [[ -f "${URLFILE}" ]]; then
+    msg "$(gettext "Selecting another package name:")"
+    PACKAGE=$(grep "Source Files" "${URLFILE}" | sed "s/.*href=[\"'].*packages\///g; s/[\"'].*//g")
+    warning "$(gettext "Package name is %s.")" "$PACKAGE"
+    rm -rf "${URLFILE}"
+    fetch_database arch ${ARCH_GITBASES[@]}
+    download_sourcefiles
+  else
+    error "$(gettext "Couldn't find package %s.")" "$PACKAGE"
+    exit 1
+  fi
 
-        ARCH_DB_URL="https://www.archlinux.org/packages/$ARCH_DB/x86_64/$CURDIR"
+}
 
-        wget -q -T 10 "$ARCH_DB_URL" -o -
-        if [[ $? -eq 0 ]]; then
-            wget -q "$ARCH_DB_URL"
-            mv ./$CURDIR ./baseurl_2.html
-            break
-        fi
+##################################
 
+function download_sourcefiles() {
+
+  if [[ -f "${URLFILE}" ]]; then
+
+    msg "${REPOMSG}"
+
+    local a=0
+    for FILEURL in ${FILEHREFS[@]}; do
+
+      echo "${DOMAINURL}/${FILEURL} ${FILENAMES[$a]}"
+      msg2 "$(gettext "Downloading %s...")" "${FILENAMES[$a]}"
+      $(wget -q "${DOMAINURL}/${FILEURL}" -O "${FILENAMES[$a]}")
+
+      [[ -f "${FILENAMES[$a]}" ]] || warning "$(gettext "Couldn't download %s")" "${FILENAMES[$a]}"
+      let a++
     done
 
-    if [[ -f baseurl_2.html ]]; then
-        echo -e "Selecting another package name:\n"
-        CURDIR=$(grep "Source Files" baseurl_2.html | sed "s/.*href=[\"'].*packages\///g; s/[\"'].*//g")
-        echo -e "Package name is $CURDIR"
-        rm baseurl_2.html
-        check_database "$ARCH_DOMAINURL" "${ARCH_GITBASES[*]}"
-        arch_dl_files
-    else
-        echo -e "\nCouldn't find package $CURDIR\n"
-        exit 1
+    rm -rf "${URLFILE}"
+
+    if [[ ISSNAPSHOT ]]; then
+      for ARCHIVEFORMAT in "${ARCHIVEFORMATS[@]}"; do
+        find . -iname "*${ARCHIVEFORMAT}" -exec tar xf {} --strip-components=1 \;
+      done
     fi
+
+    if [[ $? -eq 0 ]]; then
+      msg "$(gettext "Source files for %s downloaded".)" "$PACKAGE"
+      return 0
+    fi
+
+  fi
 
 }
 
 ##################################
 
-function arch_dl_files() {
-    if [[ -f baseurl.html ]]; then
-        FILELIST=$(cat baseurl.html | grep -E "ls-mode" | sed "s/.*href=[\"']//g; s/[\"']>plain.*//g")
+# TODO
+#<if any custom databases configured in pacman.conf>
+#DBS_TO_CHECK+=('custom')
 
-        for file in $FILELIST; do
-            if [[ ! -f $file ]]; then
-                # Wget only if file doesn't exist
-                wget -q $DOMAINURL/$file
-                mv $(echo "$file" | sed 's/.*trunk//g; s/\///1' | sed 's/\//%2F/g') $(echo $file | sed 's/.*trunk//g; s/?.*//g; s/\///g')
-            fi
-        done
-        rm baseurl.html
-        echo -e "\nSource files for $CURDIR downloaded\n"
-
-    elif [[ -f "$CURDIR.tar.gz" ]]; then
-        mv ./$CURDIR/* ./
-        rm -Rf {"$CURDIR.tar.gz",$CURDIR}
-        echo -e "\nSource files for $CURDIR downloaded\n"
-    else
-        arch_repos_deepscan
-    fi
-}
+for db in ${DBS_TO_CHECK[@]}; do
+  [[ $(fetch_database "${db}") ]] && break
+done
 
 ##################################
 
-check_database "$ARCH_DOMAINURL" "${ARCH_GITBASES[*]}"
-
-if [[ ! $? -eq 0 ]]; then
-    check_database "$AUR_DOMAINURL" "${AUR_GITBASES[*]}"
+if [[ -f ${BUILDSCRIPT} ]]; then
+  sed -i "s/^arch=.*/arch=('any')/" ${BUILDSCRIPT}
+  if [[ $? -eq 0 ]]; then msg "$(gettext "Set architecture to 'any' in ${BUILDSCRIPT}.")"; fi
 fi
-
-arch_dl_files
-
-##################################
-
-# Check if we are raspberry pi (ARM 7) or not
-if [[ $(cat /proc/cpuinfo | grep -i armv7 -m1 | wc -l) -eq 1 ]]; then
-    if [[ -f PKGBUILD ]]; then
-        cat PKGBUILD | grep arch= | grep -E "any|armv7h" > /dev/null
-        if [[ $? -ne 0 ]]; then
-            sed -i "s/arch=.*/arch=('any')/" PKGBUILD
-            echo -e "Modified architecture in PKGBUILD to 'any'\n"
-        fi
-    fi
-fi
-
-##################################
-
-rm -rf ./{"${INPUT}"*.1,*trunk*} 2>/dev/null
