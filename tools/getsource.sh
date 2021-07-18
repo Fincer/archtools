@@ -74,6 +74,7 @@ CUSTOM_DATABASES=()
 
 ARCH_GITBASES=(
   'archlinux/svntogit-packages'
+  'archlinux/svntogit-community'
 )
 
 ##################################
