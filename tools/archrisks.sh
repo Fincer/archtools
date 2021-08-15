@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
-#    archrisks - Security information tool for Arch Linux
-#    Copyright (C) 2020  Pekka Helenius
+#
+#    archrisks - Get security risk severity & count of installed packages on Arch Linux
+#    Copyright (C) 2021  Pekka Helenius
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-######################################################################################################################
+#####################################
 
 red=$'\33[91m'
 orange=$'\033[38;5;208m'
@@ -37,8 +37,8 @@ typeset -A ARCH_MANAGERS
 # <root=requires root, no_root=does not require root>
 # "
 ARCH_MANAGERS=(
-    [0,pacman]="-Syy|-Qi|-Q|-Si|root"
-    [1,pacaur]="-Syy|-Qi|-Q|-Si|no_root"
+    [0,/usr/bin/pacman]="-Syy|-Qi|-Q|-Si|root"
+    [1,/usr/bin/pacaur]="-Syy|-Qi|-Q|-Si|no_root"
 #    [2,yaourt]="-Syy|-Qi|-Q|-Si|no_root"
 #    [3,pikaur]="-Syy|-Qi|-Q|-Si|no_root"
 #    [4,pacget]="-Syy|-Qi|-Q|-Si|no_root"
@@ -96,7 +96,7 @@ function inputParser() {
                 echo "Unknown sorting order selected (${sort_order})."
                 helpCaller
         esac
-        
+
         if [[ ${input_count} -eq 2 ]]; then
             case ${input_2} in
                 "--reverse")
@@ -271,7 +271,7 @@ function runTool() {
                             col4="${reset}Newer package installed"
                             break
                         fi
-    
+
                         let s++
                     done
                 fi
@@ -283,7 +283,7 @@ function runTool() {
 
             let prs_count++
             let i++
-    
+
         done
 
         echo -e "\e[1m"
@@ -312,11 +312,11 @@ function runTool() {
             #    echo "Unknown sorting order selected. Exiting."
             #    exit 1
         esac
-        
+
         if [[ ${sort_reverse} == 1 ]]; then
             sort_params+=("-r")
         fi
-        
+
         i=0
         for line in $(echo "${risk_entries[*]}" | sort ${sort_params[*]} -t'|' ${sort_column}); do
 

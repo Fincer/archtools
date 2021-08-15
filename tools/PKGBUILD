@@ -19,7 +19,7 @@ url="https://github.com/Fincer/archtools"
 arch=(any)
 license=(GPL)
 depends=(coreutils bash grep sed
-pacman # listpkg.sh, bininfo.sh, pkginfo.sh, buildpkg.sh, installlocal.sh, missinglibs.sh, nowner.sh, findpkg.sh, findinpkg.sh, pkgdeps.sh, pkgstr.sh, risks.sh, showpkg.sh
+pacman # bininfo.sh, pkginfo.sh, buildpkg.sh, installlocal.sh, missinglibs.sh, nowner.sh, findpkg.sh, findinpkg.sh, pkgdeps.sh, risks.sh, showpkg.sh
 perl # findpkg.sh, genmac.sh
 wget # getsource.sh
 file # nowner.sh
@@ -42,18 +42,14 @@ genmac.sh
 getsource.sh # TODO: More implementation needed. See the file for details
 nowner.sh # TODO: More implementation needed. See the file for details
 pkgdeps.sh # TODO: More implementation needed. See the file for details
-pkgstr.sh
 archrisks.sh
 showpkg.sh
 deltmpfiles.sh
 missinglibs.sh
-installlocal.sh
 buildpkg.sh
 pkginfo.sh
 bininfo.sh
-listpkg.sh
 killprocess.sh
-rmpkgfiles.sh
 specialchars.sh
 whichcmd.sh
 killns.sh
@@ -69,28 +65,29 @@ if [[ $server_environment == "true" ]]; then
     source+=(ssh_timezone.sh)
 fi
 
-sha256sums=('f5455279ae48739b4ce16b10061e898f80cff0c9b24100f499015cae618fb8c6'
-            '623b794a8a537649cc434b496dbf1f018aeea99f57f11d0719f80e495ca438b6'
-            '568dba0eb0dfe1875980484fe473bbbd4397bdc04622f6177992ee75ca1b065f'
-            'ed4e06ceb5aff36ea66ce9de74f5ff2236ab2f92a9419d79d6fefe5a1b013859'
-            '60d859fead290ba0c39502a21eb093aa63b384963bf83b60d93c2fcb74655ef6'
-            'a3cf8e77af8a49935c3e9a579354f761ab7ca8c2f94760012b9e23a196307f8f'
-            '6783896c716045da0e38ae11ccaac491b6166b15ef9273118dcbe662b2eca97e'
-            'e25a0d8b425fd3f05414b6f1f6f5fce5832bb842691dad5aff4c7ac5aaa7a9fd'
-            '28fe6983f144e41d57589fefac6d60b84ff3b0968cc4b274276b34802ff03dd0'
-            '67d5627b20ec75d94cb89f9f193daa8a8018d1453d387e0306c0032f5a9b6b30'
-            'd1427a149f7092fd2ac8e0f81167f7c4eb6a318918f96b2d5301a8b750796c5d'
-            'abc140033891cc4564d71e8487f6cd1e54add761417cc772652542daf7352f44'
-            '8b76a175d7cc767519d1e3519d1fd874cc19cc529e08a27138948f8a1907ac6a'
-            '6886176293cb3ed131dd83e2ca3aa15f70c559e265534e195fa8848f2d02f659'
-            'ef4574de79c82d52a2cfb57cbf19419362ab702471bd71620e5893f426d150e2'
-            'ac761aa82d3a369a3f5335ad8f38af6cd00181cacf24737080e6d6ed6fff1b18'
-            '63a7b50faba7963584519f2800205d853cc02d6386362c9efd9f61154e4c9ddb'
-            'aa0b96ff9f1ff51e1ea3634fa7e17cbffa565c5b2db79ed75bd6aeeb9de9a723'
-            'fc87bd14c0638cd3c803143c371946efe2c96a87d72d2c144fbaf29a815294d3'
-            '4baf8c7d1032cafb8535dc4d53c42b7e7f2da6839bde791c31104a3f67eb845b'
-            'e179f9b18d6869558a97530101502ae6b445d3ef430e2e4359d015f214292093'
-            '1aae9db8652179e18691fd51c687ab393672f380084e8777145572a5699bf5cf'
+sha256sums=('891d763f852d3a61216a384a15ca01c57178d3a5fea8aa858de0643998e9ba58'
+            '3af9ef2fc156d2c62753f1bf902e31ce84fb5c7ccd3d978b176047ab281e2f08'
+            '7bdfc3ec70ebb91b330f2239a86a6f7394c8c82b51263e5e96839f5f896707da'
+            'c96b43cc49e6872cdd3b6e51cb490ca8ea2d990f2c3545bed106a21df86648eb'
+            '3bfac88603fe0f19383bc8b1ca7e2bc6795a90e851eaefd0758d515edd916100'
+            '3cf521359e473256a52e2a9fbcbfa3f0d39f42befa2d9a79cb7c51372f925c7b'
+            '43c15b4b18e6c43cab34fe905d2751525a505830e7c6e7286cedb7dfb408f815'
+            '4031b9ffb038ba16dcf188dde3f45af4cd0efff647c1926b7a172a6262ec6bf6'
+            '9993d81f56f526ab8813b268d5b3d3424f4950c05b2fc03c106d71788f043c0a'
+            '6290400b493a6e498ffe4a457274c3c4da4de60f5f3043cb36d08c9ca29cce63'
+            '4a9693bdc1d6a10e54266bf7b3d440e926d66c61ef6d18774a2db951aa4dd478'
+            '8bbcb61e6283bda4988468271cbaee0d7c537342a095466b4ea309bcb782eaf2'
+            'ca1aae07f32fd9ba2a05ffa107d1ac97638578c9926359b323be56d911b54c17'
+            '845c3f8c0069d7938f800fe6c2e473fd1359c0fd17a5c37cbd89bbcb89c10ae7'
+            'd3adffd099f5a3018b29cfb3899e5ba8ffe9d3584be5579b0edeae0818684e4d'
+            'ae13b022053b6a3d2977fac8fbf036b09dfcf107c20f9c97577a573cecc01de0'
+            '434aa1eed4088f9bf86cef1f186b6444166e9d8367d4666a79d5c9edcf8dac2e'
+            'e5b8a59bcaa430f28bdd6503d4e34e57e44e429000c046d16caddcaa0fa5a30f'
+            '96c0a6093ddc3c6946cd6aa2ce038a046bf658b834c2fe8f4e8a1c40b3149453'
+            '6df52b55e5b7471d07fe2e2a6b40ddb2972bb7ff9e60911bd4f5fcdb0e07c860'
+            'ded8bbcb0267632bdbeb100468b412911f5b0d32541744acff94a81bc346c17d'
+            '4d5a0fc2b8817f17d9f180a28970dfcd14b5aea2f0164bd6fbfed145bd009d29'
+            '30ec1a5143e9b3353e34427539abd5e5b52e2c43e3e9dd730f566362caff2c9e'
             '93ee0e990f36a5641e4f9fb4ba851e3db47ff6f01fdfad8dd169b83c546ecae9'
             '40fd211e7b4a21ca61be81a809ee47f58adc6cd220218a20a0c7e65e1534c6ca')
 

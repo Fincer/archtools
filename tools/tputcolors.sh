@@ -1,8 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Source: https://unix.stackexchange.com/questions/269077/tput-setaf-color-table-how-to-determine-color-codes
+# tputcolors - Display shell colors
 
 # Author: user79743
+# Source: https://unix.stackexchange.com/questions/269077/tput-setaf-color-table-how-to-determine-color-codes
+
+#####################################
 
 color(){
     for c; do

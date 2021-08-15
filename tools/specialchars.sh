@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# specialchars - Show special characters which need to be escaped in shell
+
+# Author: codeforester
+# https://stackoverflow.com/questions/15783701/which-characters-need-to-be-escaped-in-bash-how-do-we-know-it/44581064#44581064
+
+#####################################
+
 special=$'`!@#$%^&*()-_+={}|[]\\;\':",.<>?/ '
 for ((i=0; i < ${#special}; i++)); do
     char="${special:i:1}"
@@ -9,6 +17,3 @@ for ((i=0; i < ${#special}; i++)); do
         printf 'No - character %s does not need to be escaped\n' "$char"
     fi
 done | sort
-
-# Author: codeforester
-# https://stackoverflow.com/questions/15783701/which-characters-need-to-be-escaped-in-bash-how-do-we-know-it/44581064#44581064

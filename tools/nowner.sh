@@ -1,28 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+#   nowner - Find orphan files on various Linux distributions
+#
+#   Copyright (C) 2021  Pekka Helenius <pekka.helenius@fjordtek.com>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#    nowner - Find orphan files on various Linux distributions
-#    Copyright (C) 2018  Pekka Helenius
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-###########################################################
+#####################################
 
 bash_yellow=$'\033[93m'
 bash_red=$'\033[91m'
 bash_color_default=$'\033[0m'
 
-###########################################################
+PACMAN_EXEC="/usr/bin/pacman"
+
+#####################################
 
 #Useful for additional commands:
 
@@ -30,7 +33,7 @@ bash_color_default=$'\033[0m'
 
 #find /usr/share -maxdepth 1 -type d -exec stat --format "%n: %U" {} \; | grep fincer
 
-###########################################################
+#####################################
 # Check for command dependencies
 
 if [[ $(which --help 2>/dev/null) ]] && [[ $(echo --help 2>/dev/null) ]]; then
@@ -53,7 +56,7 @@ else
     exit 1
 fi
 
-###########################################################
+#####################################
 # Retrieve our Linux distribution and set the correct
 # package manager for this command
 
@@ -68,12 +71,12 @@ function check_pkgmgr() {
     fi
 }
 
-##############################
+#####################################
 
 # Arch Linux
 if [[ $DISTRO == "Arch" ]]; then
     check_pkgmgr pacman
-    function PKGMGR_CMD() { pacman -Qo "$1" &>/dev/null || echo "error" | wc -l ; }
+    function PKGMGR_CMD() { ${PACMAN_EXEC} -Qo "$1" &>/dev/null || echo "error" | wc -l ; }
 fi
 
 # Debian, Ubuntu
@@ -94,9 +97,9 @@ fi
 # OpenSUSE
 # TODO
 
-###########################################################
+#####################################
 # List files and directories which are not owned by any package in the system
-echo -e "\nSearch for files & folders which are not owned by any installed package.\n" 
+echo -e "\nSearch for files & folders which are not owned by any installed package.\n"
 
 # Avoid storing log files into root home
 REAL_USER=$(who am i | awk '{print $1}')
@@ -151,7 +154,7 @@ else
 
     unset response
 
-##############################
+#####################################
 
     BASEDIR_OWNER=$(stat --format "%u" "${BASEDIR}")
 
@@ -168,7 +171,7 @@ else
         echo -e "\n${bash_yellow}Warning:${bash_color_default} the main folder belongs to local user '$(id -un $BASEDIR_OWNER)'. Some files or directories may be inaccessible\n"
     fi
 
-##############################
+#####################################
 
     BASEDIR_UNDERLINE="$(echo ${BASEDIR} | sed 's/\//_/g')"
     LOGFILE="$REAL_USER_HOME/nowner-${BASEDIR_UNDERLINE}-depth-${DEPTH_NUM}_$(date +%Y-%m-%d).log"
@@ -190,11 +193,11 @@ else
             TO_FILE=0
         fi
 
-##############################
+#####################################
 
     echo -e "\nSearching unowned files & folders in $depthstr\n"
 
-##############################
+#####################################
 
     function data_counter() {
         i=0
@@ -241,7 +244,7 @@ else
 
     }
 
-##############################
+#####################################
 
     function data_check() {
 
@@ -293,7 +296,7 @@ else
         unset VALID_DATASET
     }
 
-##############################
+#####################################
 
     function folders() {
         type="folders"
@@ -309,7 +312,7 @@ else
         data_check "${find_type}" $data_name
     }
 
-##############################
+#####################################
 
     if [[ $TO_FILE -eq 1 ]]; then
         echo -e "Log timestamp: $(date '+%d-%m-%Y, %X') (TZ: $(timedatectl status | grep "Time zone:" | awk '{print $3}'))\nComputer: $(hostname)\nScanning Depth: $depthstr" >> $LOGFILE

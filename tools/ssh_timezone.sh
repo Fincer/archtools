@@ -1,6 +1,7 @@
-#!/bin/bash
-
-#    SSH timezone - Retrieve timezone information for SSH users
+#!/usr/bin/env bash
+#
+#    SSH timezone - Automatically retrieve timezone information for SSH users
+#
 #    Copyright (C) 2018  Pekka Helenius
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -16,16 +17,17 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-##############################################################################
+#####################################
 
 # This script is meant to be used as a part of provided 'bash.custom' file
 
-##############################################################################
+#####################################
 
 REQ_PKGS=(geoip2-database mmdblookup systemd openssh bind-tools)
+PACMAN_EXEC="/usr/bin/pacman"
 
 for pkg in ${REQ_PKGS[*]}; do
-    if [[ ! $(pacman -Q | grep $pkg) ]]; then
+    if [[ ! $("${PACMAN_EXEC}" -Q | grep $pkg) ]]; then
         echo -e "\nMissing package $pkg\n"
         kill -INT $$
     fi

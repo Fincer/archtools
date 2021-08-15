@@ -1,7 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+#   deltmpfiles - Delete current temporary files from pre-defined locations
+#
+#   Copyright (C) 2021  Pekka Helenius <pekka.helenius@fjordtek.com>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-###########################################################
-# Delete current temporary files
+#####################################
 
 #All tmp files currently being used
 TMP_USED=$(lsof +D /tmp/ | awk '{print $9," "}' | sort -u | tail -n+3 | sed 's/[ \t]*$//')

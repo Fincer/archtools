@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# NOT MADE BY ME!
+# Kill a process by its name
 
-###########################################################
-# Kill a process by name
+#####################################
+
 ps aux | grep $1 > /dev/null
 mypid=$(pidof $1)
 if [ "$mypid" != "" ]; then

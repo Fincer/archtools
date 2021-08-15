@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#   getsource - Get build files from Arch Linux official and AUR repositories
+#   getsource - Get build files from official Arch Linux repositories and AUR repositories
 #
 #   Copyright (C) 2021  Pekka Helenius <pekka.helenius@fjordtek.com>
 #
@@ -16,7 +16,9 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+
+#####################################
+
 # TODO: Add support for wider range of processor architectures
 # TODO: Add directory support (e.g. getsource wine ~/winesource)
 # TODO: create subdir for source files automatically to the current main dir
