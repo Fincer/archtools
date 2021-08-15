@@ -1,0 +1,7 @@
+#!/bin/env bash
+
+source /usr/local/bin/pacmankeycheck.sh
+
+keyringcheck
+
+/usr/bin/pacman ${@:1}
