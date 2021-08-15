@@ -1,4 +1,4 @@
-# Maintainer: Pekka Helenius <fincer89@hotmail.com>
+# Maintainer: Pekka Helenius <pekka[dot]helenius[at]fjordtek[dot]com>
 
 # Do we include server-specific files such as SSH timezone settings?
 server_environment=false
