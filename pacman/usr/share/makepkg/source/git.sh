@@ -62,8 +62,12 @@ download_git() {
 			plain "$(gettext "Aborting...")"
 			exit 1
 		fi
-		msg2 "$(gettext "Updating %s %s repo...")" "${repo}" "git"
-		if ! git fetch --all -p; then
+		if [[ ${options[@]} ]]; then
+			msg2 "$(gettext "Updating %s %s repo (params: %s)...")" "${repo}" "git" "${options[*]}"
+		else
+			msg2 "$(gettext "Updating %s %s repo...")" "${repo}" "git"
+		fi
+		if ! git fetch ${options[*]} -p; then
 			# only warn on failure to allow offline builds
 			warning "$(gettext "Failure while updating %s %s repo")" "${repo}" "git"
 		fi
