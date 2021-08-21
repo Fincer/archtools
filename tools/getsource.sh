@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#   getsource - Get build files from official Arch Linux repositories and AUR repositories
+#   getsource - Get build files from Arch Linux official, AUR & ARM repositories
 #
 #   Copyright (C) 2021  Pekka Helenius <pekka.helenius@fjordtek.com>
 #
@@ -16,9 +16,7 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-#####################################
-
+#
 # TODO: Add support for wider range of processor architectures
 # TODO: Add directory support (e.g. getsource wine ~/winesource)
 # TODO: create subdir for source files automatically to the current main dir
@@ -61,13 +59,21 @@ ARCHIVEFORMATS=(
 
 ##################################
 
-DBS_TO_CHECK=('arch' 'aur' 'arch_deepscan')
+DBS_TO_CHECK=('arch' 'aur' 'arm' 'arch_deepscan')
 
 ARCH_DATABASES=(
   'core'
   'extra'
   'community'
   'community-testing'
+)
+
+ARM_DATABASES=(
+  'alarm'
+  'aur'
+  'community'
+  'core'
+  'extra'
 )
 
 # TODO
@@ -79,6 +85,10 @@ ARCH_GITBASES=(
   'archlinux/svntogit-community'
 )
 
+ARM_GITBASES=(
+  'archlinuxarm/PKGBUILDs'
+)
+
 ##################################
 
 function get_url() {
@@ -86,6 +96,8 @@ function get_url() {
   if wget -q -c "${1}" -O "${2}"; then return 0; fi
   return 1
 }
+
+##################################
 
 function fetch_database() {
 
@@ -119,6 +131,7 @@ function fetch_database() {
       done
       return 1
       ;;
+
     aur)
       local ISSNAPSHOT
       DOMAINURL="https://aur.archlinux.org"
@@ -132,9 +145,36 @@ function fetch_database() {
       fi
       return 1
       ;;
+
+    arm)
+      GITBASES=(${ARM_GITBASES[@]})
+      DATABASES=(${ARM_DATABASES[@]})
+      DOMAINURL="https://github.com"
+      REPOMSG="Using Arch Linux ARM repositories"
+
+      for GITBASE in ${GITBASES[@]}; do
+        for DATABASE in ${DATABASES[@]}; do
+          BASEURL="${DOMAINURL}/${GITBASE}/tree/master/${DATABASE}/${PACKAGE}"
+
+          if get_url "${BASEURL}" "${URLFILE}"; then
+            FILENAMES=()
+
+            FILEHREFS=( $(grep -oP '(?<=data-pjax).*?(?=\<\/a)' "${URLFILE}" | sed -r "s/.*href=[\"|'](.*)[\"|']>.*/\1/; s/\/blob//g" | grep ${PACKAGE}) )
+            for i in ${FILEHREFS[@]}; do
+              FILENAMES+=( $(echo "${i}" | sed 's/.*\///g') )
+            done
+            DOMAINURL="https://raw.githubusercontent.com"
+            download_sourcefiles && return 0
+          fi
+        done
+      done
+      return 1
+      ;;
+
     arch_deepscan)
       arch_repos_deepscan
       ;;
+
   esac
 
   [[ -f "${URLFILE}" ]] || return 1
@@ -153,12 +193,12 @@ function arch_repos_deepscan() {
   if [[ -f "${URLFILE}" ]]; then
     msg "$(gettext "Selecting another package name:")"
     PACKAGE=$(grep "Source Files" "${URLFILE}" | sed "s/.*href=[\"'].*packages\///g; s/[\"'].*//g")
-    warning "$(gettext "Package name is %s.")" "$PACKAGE"
+    warning "$(gettext "Package name is %s")" "${PACKAGE}"
     rm -rf "${URLFILE}"
     fetch_database arch ${ARCH_GITBASES[@]}
     download_sourcefiles
   else
-    error "$(gettext "Couldn't find package %s.")" "$PACKAGE"
+    error "$(gettext "Couldn't find package %s")" "${PACKAGE}"
     exit 1
   fi
 
@@ -192,7 +232,7 @@ function download_sourcefiles() {
     fi
 
     if [[ $? -eq 0 ]]; then
-      msg "$(gettext "Source files for %s downloaded".)" "$PACKAGE"
+      msg "$(gettext "Source files for %s downloaded")" "${PACKAGE}"
       return 0
     fi
 
