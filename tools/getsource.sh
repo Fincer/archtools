@@ -92,8 +92,8 @@ ARM_GITBASES=(
 ##################################
 
 function get_url() {
-  if ! wget -q -T 10 "${1}" -O - >/dev/null; then return 1; fi
-  if wget -q -c "${1}" -O "${2}"; then return 0; fi
+  if ! wget --no-check-certificate -q -T 10 "${1}" -O - >/dev/null; then return 1; fi
+  if wget --no-check-certificate -q -c "${1}" -O "${2}"; then return 0; fi
   return 1
 }
 
