@@ -217,7 +217,7 @@ function download_sourcefiles() {
 
       echo "${DOMAINURL}/${FILEURL} ${FILENAMES[$a]}"
       msg2 "$(gettext "Downloading %s...")" "${FILENAMES[$a]}"
-      $(wget -q "${DOMAINURL}/${FILEURL}" -O "${FILENAMES[$a]}")
+      $(wget --no-check-certificate -q "${DOMAINURL}/${FILEURL}" -O "${FILENAMES[$a]}")
 
       [[ -f "${FILENAMES[$a]}" ]] || warning "$(gettext "Couldn't download %s")" "${FILENAMES[$a]}"
       let a++
