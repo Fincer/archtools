@@ -2,7 +2,7 @@
 #
 #   getsource - Get build files from Arch Linux official, AUR & ARM repositories
 #
-#   Copyright (C) 2021  Pekka Helenius <pekka.helenius@fjordtek.com>
+#   Copyright (C) 2022  Pekka Helenius <pekka.helenius@fjordtek.com>
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
