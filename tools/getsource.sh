@@ -192,7 +192,7 @@ function arch_repos_deepscan() {
 
   if [[ -f "${URLFILE}" ]]; then
     msg "$(gettext "Selecting another package name:")"
-    PACKAGE=$(grep "Source Files" "${URLFILE}" | sed "s/.*href=[\"'].*packages\///g; s/[\"'].*//g")
+    PACKAGE=$(grep "Source Files" "${URLFILE}" | sed "s/.*href=[\"'].*packages\///g; s/[\"'].*//g; s/\/.*//")
     warning "$(gettext "Package name is %s")" "${PACKAGE}"
     rm -rf "${URLFILE}"
     fetch_database arch ${ARCH_GITBASES[@]}
