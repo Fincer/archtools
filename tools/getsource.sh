@@ -139,8 +139,8 @@ function fetch_database() {
       REPOMSG="Using Arch Linux user repositories (AUR)"
 
       if get_url "${SNAPSHOTURL}" "${URLFILE}"; then
-        FILEHREFS=($(grep -oP '(?<=href\=\"\/).*?(?=\"\>Download snapshot)' "${URLFILE}"))
-        FILENAMES=($(grep -oP '(?<=snapshot\/).*?(?=\"\>Download snapshot)' "${URLFILE}"))
+        FILEHREFS=($(grep -oPza '(?<=href\=\"\/).*?(?=\"\>(\s*)Download snapshot)' "${URLFILE}" | tr -d '\0'))
+        FILENAMES=(${FILEHREFS[@]/*\//})
         download_sourcefiles && return 0
       fi
       return 1
