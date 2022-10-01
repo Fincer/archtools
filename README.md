@@ -4,15 +4,22 @@ Various command line tools for Arch Linux
 
 ## About
 
-This repository has various practical developer/sysadmin-oriented tools to Arch Linux.
+This repository has various practical developer/sysadmin-oriented tools for Arch Linux.
 
 ----------------------
 
 ## Contents
 
+- `bash.bashrc`
+
+  - Drop into `/etc/` system folder
+  - Use with `bash.custom` file
+
 - `bash.custom`
 
-  - Enable various customizations to your bash environment. Intention is to make life little bit easier to sysadmins when they work in shell environments.
+  - Drop into `/etc/` system folder or install using [PKGBUILD](tools/PKGBUILD)
+  - Enable various customizations in your bash environment
+  - Improve usability and visual feedback of bash shell
 
 ### [tools](tools)
 
