@@ -117,11 +117,13 @@ function fetch_database() {
 
       for GITBASE in ${GITBASES[@]}; do
         BASEURL="${DOMAINURL}/${GITBASE}/tree/packages/${PACKAGE}/trunk"
+        BASEURL_RELATIVE_FILES="/${GITBASE}/blob/packages/${PACKAGE}/trunk"
 
         if get_url "${BASEURL}" "${URLFILE}"; then
-          FILENAMES=()
 
-          FILEHREFS=( $(grep -oP '(?<=data-pjax).*?(?=\<\/a)' "${URLFILE}" | sed -r "s/.*href=[\"|'](.*)[\"|']>.*/\1/; s/\/blob//g" | grep trunk) )
+          FILENAMES=()
+          FILEHREFS=( $(grep -oP "(?=${BASEURL_RELATIVE_FILES}).*?(?=\"\>)" "${URLFILE}" | sed 's/blob//') )
+
           for i in ${FILEHREFS[@]}; do
             FILENAMES+=( $(echo "${i}" | sed 's/.*\///g') )
           done
@@ -155,11 +157,13 @@ function fetch_database() {
       for GITBASE in ${GITBASES[@]}; do
         for DATABASE in ${DATABASES[@]}; do
           BASEURL="${DOMAINURL}/${GITBASE}/tree/master/${DATABASE}/${PACKAGE}"
+          BASEURL_RELATIVE_FILES="/${GITBASE}/blob/master/${DATABASE}/${PACKAGE}"
 
           if get_url "${BASEURL}" "${URLFILE}"; then
-            FILENAMES=()
 
-            FILEHREFS=( $(grep -oP '(?<=data-pjax).*?(?=\<\/a)' "${URLFILE}" | sed -r "s/.*href=[\"|'](.*)[\"|']>.*/\1/; s/\/blob//g" | grep ${PACKAGE}) )
+            FILENAMES=()
+            FILEHREFS=( $(grep -oP "(?=${BASEURL_RELATIVE_FILES}).*?(?=\"\>)" "${URLFILE}" | sed 's/blob//') )
+
             for i in ${FILEHREFS[@]}; do
               FILENAMES+=( $(echo "${i}" | sed 's/.*\///g') )
             done
