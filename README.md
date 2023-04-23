@@ -31,6 +31,7 @@ Various shell tools, bundled in a custom `archtools` package. See [PKGBUILD](too
 | `bininfo`      | Show information about an executable in PATH on Arch Linux                                    |
 | `buildpkg`     | Build a local package on the current directory which has `PKGBUILD` on Arch Linux             |
 | `deltmpfiles`  | Delete current temporary files from pre-defined locations                                     |
+| `dummypkg`     | Create a dummy Arch Linux package                                                             |
 | `extract`      | Extract wide range of various archive types with native tools                                 |
 | `findinpkg`    | Find text patterns & print occurences with matching lines numbers in Arch Linux package files |
 | `findmatch`    | Grep/List matching strings in a specific folder                                               |

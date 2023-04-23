@@ -42,6 +42,7 @@ genmac.sh
 getsource.sh # TODO: More implementation needed. See the file for details
 nowner.sh # TODO: More implementation needed. See the file for details
 pkgdeps.sh # TODO: More implementation needed. See the file for details
+dummypkg.sh
 archrisks.sh
 showpkg.sh
 deltmpfiles.sh
@@ -71,9 +72,10 @@ sha256sums=('891d763f852d3a61216a384a15ca01c57178d3a5fea8aa858de0643998e9ba58'
             'c96b43cc49e6872cdd3b6e51cb490ca8ea2d990f2c3545bed106a21df86648eb'
             '3bfac88603fe0f19383bc8b1ca7e2bc6795a90e851eaefd0758d515edd916100'
             '3cf521359e473256a52e2a9fbcbfa3f0d39f42befa2d9a79cb7c51372f925c7b'
-            '8ed38b8f9020280a29999a524f1ad6fb1145d4f00827df45b256bf5eb5a450a1'
+            '89d421e4981e0907b9095165631791ac034c0d33a215a71c21a59acbf2c41480'
             '1424ad779f5f673c01ac2845f5e3749b7c7b47dfdaa173bd45c4e866dfa4da22'
             '7493ff8f2321b04fab6c4b743a15708d9aca4383ce0c934c6ed4d091f1dfd76f'
+            '0524c509b1378dd275c8e396bcafb6df9de48248739c528bc335f879c4b08bfc'
             '6290400b493a6e498ffe4a457274c3c4da4de60f5f3043cb36d08c9ca29cce63'
             '4a9693bdc1d6a10e54266bf7b3d440e926d66c61ef6d18774a2db951aa4dd478'
             '8bbcb61e6283bda4988468271cbaee0d7c537342a095466b4ea309bcb782eaf2'
