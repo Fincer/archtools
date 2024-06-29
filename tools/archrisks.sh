@@ -191,9 +191,10 @@ function runTool() {
         IFS=$'\n'
 
         for i in $(arch-audit); do
-            package_name=$(echo "$i" | awk -F ' ' '{print $2}')
+            package_name=$(echo "$i" | awk -F ' ' '{print $1}')
             risk_level=$(echo "$i" | grep -oE "Low|Medium|High|Critical")
-            risks_count=$(echo "$i" | awk -F 'CVE' '{print NF-1}')
+            risks_count=$(echo "$i" | grep -oP "(?<=by ).+(?=\. )" | sed 's/, /\n/g' | wc -l)
+            #risks_count=$(echo "$i" | awk -F 'CVE' '{print NF-1}')
 
             risks[$count]="$package_name $risk_level $risks_count"
 
@@ -216,7 +217,7 @@ function runTool() {
             #Critical, High, Medium or Low risk
             col3=$(echo "$risk_parsed" | awk -F ' ' '{print $2}' | sed 's/Critical/0/g; s/High/1/g; s/Medium/2/g; s/Low/3/g')
 
-            col5=$(${selected_manager} ${command_pkginfo_local} $col1 |grep -i description | awk -F ": " '{print $2}')
+            col5=$(${selected_manager} ${command_pkginfo_local} $col1 | grep -i description | awk -F ": " '{print $2}')
             maxchars=35
 
             if [[ $(echo $col5 | wc -m) -gt $maxchars ]]; then
@@ -260,12 +261,12 @@ function runTool() {
 
                         check1=$(echo -e $version_array_1 | awk -v var=$s -F '.' '{print $var}')
                         check2=$(echo -e $version_array_2 | awk -v var=$s -F '.' '{print $var}')
-    
+
                         if [[ $check2 -gt $check1 ]]; then
                             # Repo number is greater
                             col4="${yellow}Update available"
                             break
-    
+
                         elif [[ $check2 -lt $check1 ]]; then
                             # System number is greater
                             col4="${reset}Newer package installed"
